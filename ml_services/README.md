@@ -1,14 +1,16 @@
 # TrustNewsAI ML Service
 
-This folder owns the machine learning workflow:
+This folder contains the current machine-learning data preparation workflow:
 
-- raw dataset storage
-- data cleaning
-- model training
-- model artifacts
-- future ML inference API
+- Raw dataset input
+- Dataset exploration and quality checks
+- Text cleaning and content construction
+- Duplicate and short-record filtering
+- Stratified train/test split
+- Processed CSV outputs
+- Reusable text preprocessing utilities
 
-The first milestone is to turn Kaggle raw CSV files into one clean dataset.
+The current milestone prepares data for later model training. Model training and inference are not yet implemented in this service.
 
 ## Setup
 
@@ -17,22 +19,24 @@ Create and activate a virtual environment from inside `ml_services/`:
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
 ## Dataset
 
-Use the Kaggle Fake and Real News Dataset. Download it from Kaggle and place the
-raw files here:
+Download the Kaggle Fake and Real News Dataset and place the raw files here:
 
 ```text
-ml_services/data/raw/True.csv
-ml_services/data/raw/Fake.csv
+data/raw/True.csv
+data/raw/Fake.csv
 ```
+
+The dataset is not included in this repository.
 
 ## Python Script Workflow
 
-Run the scripts in order:
+Run the scripts from the `ml_services/` directory.
 
 ### 1. Explore the dataset
 
@@ -40,51 +44,63 @@ Run the scripts in order:
 python scripts/explore_dataset.py
 ```
 
-This shows:
-- Data shape and columns
-- Label distribution
-- Missing values
-- Duplicate count
-- Content statistics
-- Creates visualization chart (`label_distribution.png`)
+The exploration script reports:
 
-### 2. Prepare the clean dataset
+- Data shape and columns
+- REAL/FAKE label distribution
+- Missing values and duplicate article count
+- Article content-length statistics
+- Potential content-length outliers
+- Sample article titles
+
+It also saves a label-distribution chart to `scripts/label_distribution.png`.
+
+### 2. Prepare the dataset
 
 ```powershell
 python scripts/prepare_dataset.py
 ```
 
-This creates:
-- `ml_services/data/processed/news_clean.csv`
+The preparation script:
 
-## Cleaning Process
-- Removes URLs and emails
-- Normalizes whitespace
-- Combines title and text into content
-- Drops rows with missing/short content
-- Removes duplicates
-- Shuffles the data
+- Cleans title and article text
+- Combines title and text into a content field
+- Removes missing, invalid, short, and duplicate records
+- Shuffles the cleaned data with a fixed random seed
+- Creates a stratified 80/20 train/test split
+
+Generated outputs:
+
+```text
+data/processed/
+  news_clean.csv
+  train.csv
+  test.csv
+```
+
+The full cleaned file contains `title`, `text`, `content`, and `label`. The train and test files contain `content` and `label`.
 
 ## Project Structure
 
 ```text
 ml_services/
-  scripts/           Runnable Python scripts
+  scripts/
     explore_dataset.py
     prepare_dataset.py
-  src/               Reusable Python modules
+  src/
     trustnews_ml/
       __init__.py
       preprocessing.py
   data/
-    raw/             Raw dataset files (not in Git)
-    processed/       Cleaned dataset (not in Git)
-  artifacts/         Trained models (not in Git)
+    raw/          Raw input CSV files (not committed)
+    processed/    Generated CSV files (not committed)
+  artifacts/      Reserved for future trained model files
+  requirements.txt
 ```
 
 ## Current Data Contract
 
-The processed CSV must contain:
+The cleaned dataset uses these columns:
 
 - `title`
 - `text`
@@ -95,3 +111,7 @@ Allowed labels:
 
 - `REAL`
 - `FAKE`
+
+## Limitations and next step
+
+This service currently explores and prepares data; it does not yet train a classifier or expose prediction functionality. The next milestone is to train and evaluate models using the prepared training data, then save and test the selected model before integrating inference with the backend.
