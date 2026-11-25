@@ -9,7 +9,7 @@ Expected raw files:
     - ../data/raw/Fake.csv
 
 Run this script from the ml_services directory:
-    python notebooks/01_dataset_exploration.py
+    python scripts/explore_dataset.py
 """
 
 from pathlib import Path
